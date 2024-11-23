@@ -1,90 +1,85 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+import tkinter as tk
+from tkinter import ttk, messagebox
 
-#Lionels part:
+class CaregiverSchedulingApp(tk.Tk):
+    def __init__(self, schedule):
+        super().__init__()
+        self.title("Caregiver Scheduling App")
+        self.geometry("900x700")
 
+        self.schedule = schedule
+        self.caregivers = []  # List of caregiver dictionaries
 
+        self.create_widgets()
 
+    def create_widgets(self):
+        ttk.Label(self, text="~ Caregiver Scheduling System ~", font=("Arial", 16)).pack(pady=10)
 
+        # Add Caregiver Section
+        add_frame = ttk.Frame(self)
+        add_frame.pack()
+        # For the name
+        ttk.Label(add_frame, text="Name:").pack()
+        self.name_var = tk.StringVar()
+        ttk.Entry(add_frame, textvariable=self.name_var).pack()
+        # For the Phone
+        ttk.Label(add_frame, text="Phone:").pack()
+        self.phone_var = tk.StringVar()
+        # For the Email
+        ttk.Entry(add_frame, textvariable=self.phone_var).pack()
+        ttk.Label(add_frame, text="Email:").pack()
+        self.email_var = tk.StringVar()
+        ttk.Entry(add_frame, textvariable=self.email_var).pack()
+        ttk.Button(add_frame, text="Add Caregiver", command=self.add_caregiver).pack(padx=10) # To add caregiver info
 
+        # Calendar View Button
+        ttk.Button(self, text="Open Calendar View", command=self.show_calendar_view).pack(pady=10)
 
+        # Caregiver List
+        caregiver_frame = ttk.Frame(self)
+        caregiver_frame.pack(pady=10)
 
+        ttk.Label(caregiver_frame, text="Caregivers", font=("Arial", 14)).pack(pady=5)
+        self.caregiver_list = ttk.Treeview(
+            caregiver_frame,
+            columns=("Name", "Phone", "Email"),
+            show="headings"
+        )
+        self.caregiver_list.heading("Name", text="Name")
+        self.caregiver_list.heading("Phone", text="Phone")
+        self.caregiver_list.heading("Email", text="Email")
+        self.caregiver_list.pack(pady=10)
 
-#Maryanne's part:
+    def add_caregiver(self):
+        name = self.name_var.get().strip() 
+        phone = self.phone_var.get().strip()
+        email = self.email_var.get().strip()
 
+        if name and phone and email:
+            self.caregivers.append({"name": name, "phone": phone, "email": email, "availability": {}})
+            self.update_caregiver_list()
+            self.clear_inputs()
+        else:
+            messagebox.showwarning("Input Error", "All fields are required!") # input validation to make sure all the fields are entered
 
+    def update_caregiver_list(self):
+        for item in self.caregiver_list.get_children():
+            self.caregiver_list.delete(item) # to make sure the caregiver is added to a list
+        for caregiver in self.caregivers:
+            self.caregiver_list.insert("", tk.END, values=(caregiver["name"], caregiver["phone"], caregiver["email"]))
 
+    def clear_inputs(self): # clear inputs
+        self.name_var.set("")
+        self.phone_var.set("")
+        self.email_var.set("")
 
-
-
-
-
-#Inaya Siddiqi's part: 
-class PayCalculator:
-    def __init__(self, caregivers, schedule):
-        self.caregivers = caregivers  # this is the list of all caregivers
-        self.schedule = schedule  # this is the schedule object with shifts
-        self.hourly_rate = 20  # the rate for paid caregivers is $20/hour
-
-    def calculate_weekly_pay(self):
-        """calculate weekly pay for caregivers"""
-        pay_data = {}  # this will store pay for each caregiver
-
-        # go through the schedule and calculate hours worked
-        for day, shifts in self.schedule.shifts_data.items():  # loop through each day in the schedule
-            for caregiver_name, shift_time in shifts:  # loop through each shift in the day
-                # find the caregiver in the list
-                caregiver = next((cg for cg in self.caregivers if cg["name"] == caregiver_name), None)
-                if caregiver:
-                    # add 6 hours (because each shift is 6 hours long)
-                    pay_data[caregiver_name] = pay_data.get(caregiver_name, 0) + 6
-
-        # multiply the total hours by the hourly rate to get pay
-        for caregiver_name in pay_data:
-            pay_data[caregiver_name] *= self.hourly_rate  # this converts hours into dollars
-
-        return pay_data  # return the pay data for all caregivers
-
-    def generate_pay_report(self):
-        """make a simple pay report"""
-        weekly_pay = self.calculate_weekly_pay()  # get the pay data
-        report = "Weekly Pay Report:\n"  # start the report
-        total = 0  # to track the total pay for all caregivers
-
-        # go through each caregiver and add their pay to the report
-        for name, pay in weekly_pay.items():
-            report += f"{name}: ${pay:.2f}\n"  # add each caregiver's pay to the report
-            total += pay  # add to the total
-
-        # add the total pay to the report
-        report += f"\nTotal Weekly Pay: ${total:.2f}"
-        return report  # return the full report
-
-
-#Running it (all of us):
-if __name__ == "__main__":
-    schedule = Schedule()  # make a schedule object to handle shifts
-    app = CaregiverSchedulingApp(schedule)  # create the main app and pass the schedule to it
-
-    # add some fake caregivers for testing the program
-    app.caregivers = [
-        {
-            "name": "Alice",  # caregiver's name
-            "phone": "1234567890",  # their phone number
-            "email": "alice@example.com",  # their email
-            "availability": {"7AM - 1PM": "Preferred"}  # alice prefers morning shifts
-        },
-        {
-            "name": "Bob",  # another caregiver
-            "phone": "0987654321",  # bob's phone number
-            "email": "bob@example.com",  # bob's email
-            "availability": {"1PM - 7PM": "Available"}  # bob is available for afternoon shifts
-        }
-    ]
-
-    # update the schedule with the caregivers' availability
-    schedule.update_shift(app.caregivers)
-
-    # run the app to show the GUI
-    app.mainloop()
-
+    def show_calendar_view(self):
+        calendar_view = self.schedule.generate_calendar_view()
+        # *ChatGPT, response to the prompt "How can I create a calendar view in a tkinter application that displays schedule in a separate window?" OpenAI, November 22, 2024.*
+        calendar_window = tk.Toplevel(self)
+        calendar_window.title("Calendar View")
+        text_widget = tk.Text(calendar_window, wrap=tk.WORD)
+        text_widget.insert(tk.END, calendar_view)
+        text_widget.pack()
