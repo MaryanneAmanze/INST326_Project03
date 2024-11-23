@@ -1,8 +1,10 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
 import tkinter as tk
 from tkinter import ttk, messagebox
 
+# scheduling class
 class CaregiverSchedulingApp(tk.Tk):
     def __init__(self, schedule):
         super().__init__()
@@ -37,20 +39,20 @@ class CaregiverSchedulingApp(tk.Tk):
         # Calendar View Button
         ttk.Button(self, text="Open Calendar View", command=self.show_calendar_view).pack(pady=10)
 
-        # Caregiver List
         caregiver_frame = ttk.Frame(self)
         caregiver_frame.pack(pady=10)
 
-        ttk.Label(caregiver_frame, text="Caregivers", font=("Arial", 14)).pack(pady=5)
-        self.caregiver_list = ttk.Treeview(
-            caregiver_frame,
-            columns=("Name", "Phone", "Email"),
-            show="headings"
-        )
-        self.caregiver_list.heading("Name", text="Name")
-        self.caregiver_list.heading("Phone", text="Phone")
-        self.caregiver_list.heading("Email", text="Email")
-        self.caregiver_list.pack(pady=10)
+        ttk.Label(caregiver_frame, text="Caregivers", font=("Arial", 12)).pack(pady=3)
+         
+        header_frame = ttk.Frame(caregiver_frame)
+        header_frame.pack()
+
+        ttk.Label(header_frame, text="Name", font=("Arial", 12, "bold")).pack(side=tk.LEFT, padx=10)
+        ttk.Label(header_frame, text="Phone", font=("Arial", 12, "bold")).pack(side=tk.LEFT, padx=10)
+        ttk.Label(header_frame, text="Email", font=("Arial", 12, "bold")).pack(side=tk.LEFT, padx=10)
+
+        self.caregiver_labels = []  
+        self.update_caregiver_list(caregiver_frame)
 
     def add_caregiver(self):
         name = self.name_var.get().strip() 
@@ -64,11 +66,24 @@ class CaregiverSchedulingApp(tk.Tk):
         else:
             messagebox.showwarning("Input Error", "All fields are required!") # input validation to make sure all the fields are entered
 
-    def update_caregiver_list(self):
-        for item in self.caregiver_list.get_children():
-            self.caregiver_list.delete(item) # to make sure the caregiver is added to a list
-        for caregiver in self.caregivers:
-            self.caregiver_list.insert("", tk.END, values=(caregiver["name"], caregiver["phone"], caregiver["email"]))
+    def update_caregiver_list(self, caregiver_frame=None):
+        for label in self.caregiver_labels:
+            label.destroy()
+
+        self.caregiver_labels = []
+
+        if caregiver_frame:
+            for caregiver in self.caregivers:
+                caregiver_info = f"Name: {caregiver['name']} | Phone: {caregiver['phone']} | Email: {caregiver['email']}"
+                caregiver_row_frame = ttk.Frame(caregiver_frame)
+                caregiver_row_frame.pack(pady=5)
+
+                # labels for each column in caregiver row
+                ttk.Label(caregiver_row_frame, text=caregiver['name'], font=("Arial", 10)).pack(side=tk.LEFT, padx=10)
+                ttk.Label(caregiver_row_frame, text=caregiver['phone'], font=("Arial", 10)).pack(side=tk.LEFT, padx=10)
+                ttk.Label(caregiver_row_frame, text=caregiver['email'], font=("Arial", 10)).pack(side=tk.LEFT, padx=10)
+
+                self.caregiver_labels.append(caregiver_row_frame) 
 
     def clear_inputs(self): # clear inputs
         self.name_var.set("")
