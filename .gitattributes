@@ -1,2 +1,90 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+#Lionels part:
+
+
+
+
+
+
+
+
+#Maryanne's part:
+
+
+
+
+
+
+
+
+#Inaya Siddiqi's part: 
+class PayCalculator:
+    def __init__(self, caregivers, schedule):
+        self.caregivers = caregivers  # this is the list of all caregivers
+        self.schedule = schedule  # this is the schedule object with shifts
+        self.hourly_rate = 20  # the rate for paid caregivers is $20/hour
+
+    def calculate_weekly_pay(self):
+        """calculate weekly pay for caregivers"""
+        pay_data = {}  # this will store pay for each caregiver
+
+        # go through the schedule and calculate hours worked
+        for day, shifts in self.schedule.shifts_data.items():  # loop through each day in the schedule
+            for caregiver_name, shift_time in shifts:  # loop through each shift in the day
+                # find the caregiver in the list
+                caregiver = next((cg for cg in self.caregivers if cg["name"] == caregiver_name), None)
+                if caregiver:
+                    # add 6 hours (because each shift is 6 hours long)
+                    pay_data[caregiver_name] = pay_data.get(caregiver_name, 0) + 6
+
+        # multiply the total hours by the hourly rate to get pay
+        for caregiver_name in pay_data:
+            pay_data[caregiver_name] *= self.hourly_rate  # this converts hours into dollars
+
+        return pay_data  # return the pay data for all caregivers
+
+    def generate_pay_report(self):
+        """make a simple pay report"""
+        weekly_pay = self.calculate_weekly_pay()  # get the pay data
+        report = "Weekly Pay Report:\n"  # start the report
+        total = 0  # to track the total pay for all caregivers
+
+        # go through each caregiver and add their pay to the report
+        for name, pay in weekly_pay.items():
+            report += f"{name}: ${pay:.2f}\n"  # add each caregiver's pay to the report
+            total += pay  # add to the total
+
+        # add the total pay to the report
+        report += f"\nTotal Weekly Pay: ${total:.2f}"
+        return report  # return the full report
+
+
+#Running it (all of us):
+if __name__ == "__main__":
+    schedule = Schedule()  # make a schedule object to handle shifts
+    app = CaregiverSchedulingApp(schedule)  # create the main app and pass the schedule to it
+
+    # add some fake caregivers for testing the program
+    app.caregivers = [
+        {
+            "name": "Alice",  # caregiver's name
+            "phone": "1234567890",  # their phone number
+            "email": "alice@example.com",  # their email
+            "availability": {"7AM - 1PM": "Preferred"}  # alice prefers morning shifts
+        },
+        {
+            "name": "Bob",  # another caregiver
+            "phone": "0987654321",  # bob's phone number
+            "email": "bob@example.com",  # bob's email
+            "availability": {"1PM - 7PM": "Available"}  # bob is available for afternoon shifts
+        }
+    ]
+
+    # update the schedule with the caregivers' availability
+    schedule.update_shift(app.caregivers)
+
+    # run the app to show the GUI
+    app.mainloop()
+
